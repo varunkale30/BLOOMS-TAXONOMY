@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Bloom's Taxonomy Classifier</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        .title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .register-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e1e5e9;
+        }
+        
+        .divider span {
+            padding: 0 15px;
+        }
+        
+        .login-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .login-link:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fcc;
+            display: none;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #cfc;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: left;
+        }
+        
+        .requirement {
+            margin: 2px 0;
+        }
+        
+        .requirement.valid {
+            color: #28a745;
+        }
+        
+        .requirement.invalid {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">🌱</div>
+        <h1 class="title">Bloom's Classifier</h1>
+        <p class="subtitle">Create your account</p>
+        
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <div class="password-requirements">
+                    <div class="requirement" id="length-req">At least 8 characters</div>
+                    <div class="requirement" id="uppercase-req">One uppercase letter</div>
+                    <div class="requirement" id="lowercase-req">One lowercase letter</div>
+                    <div class="requirement" id="number-req">One number</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+            
+            <button type="submit" class="register-btn" id="registerBtn">
+                <span class="btn-text">Create Account</span>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Creating account...</span>
+                </div>
+            </button>
+        </form>
+        
+        <div class="divider">
+            <span>or</span>
+        </div>
+        
+        <p>Already have an account? <a href="/login" class="login-link">Sign in</a></p>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const registerBtn = document.getElementById('registerBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        // Password validation
+        function validatePassword(password) {
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /\d/.test(password)
+            };
+            
+            // Update requirement indicators
+            document.getElementById('length-req').className = `requirement ${requirements.length ? 'valid' : 'invalid'}`;
+            document.getElementById('uppercase-req').className = `requirement ${requirements.uppercase ? 'valid' : 'invalid'}`;
+            document.getElementById('lowercase-req').className = `requirement ${requirements.lowercase ? 'valid' : 'invalid'}`;
+            document.getElementById('number-req').className = `requirement ${requirements.number ? 'valid' : 'invalid'}`;
+            
+            return Object.values(requirements).every(Boolean);
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+        
+        function setLoading(loading) {
+            const btnText = registerBtn.querySelector('.btn-text');
+            const loadingDiv = registerBtn.querySelector('.loading');
+            
+            if (loading) {
+                btnText.style.display = 'none';
+                loadingDiv.style.display = 'block';
+                registerBtn.disabled = true;
+            } else {
+                btnText.style.display = 'block';
+                loadingDiv.style.display = 'none';
+                registerBtn.disabled = false;
+            }
+        }
+        
+        // Password validation on input
+        password.addEventListener('input', () => {
+            validatePassword(password.value);
+        });
+        
+        // Confirm password validation
+        confirmPassword.addEventListener('input', () => {
+            const match = password.value === confirmPassword.value;
+            confirmPassword.style.borderColor = match ? '#28a745' : '#dc3545';
+        });
+        
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const passwordValue = password.value;
+            const confirmPasswordValue = confirmPassword.value;
+            
+            // Validation
+            if (!name || !email || !passwordValue || !confirmPasswordValue) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            if (!validatePassword(passwordValue)) {
+                showError('Please meet all password requirements');
+                return;
+            }
+            
+            if (passwordValue !== confirmPasswordValue) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            setLoading(true);
+            showError('');
+            showSuccess('');
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        name, 
+                        email, 
+                        password: passwordValue 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Account created successfully! Redirecting...');
+                    // Store token if needed
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/dashboard';
+                    }, 1000);
+                } else {
+                    showError(data.message || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Network error. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+        });
+        
+        // Pre-fill email if available
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailParam = urlParams.get('email');
+        if (emailParam) {
+            document.getElementById('email').value = emailParam;
+        }
+    </script>
+</body>
+</html>

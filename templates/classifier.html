@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classifier - Bloom's Taxonomy Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-nav">
+                <a href="{{ url_for('dashboard') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            <h1><i class="fas fa-brain"></i> Bloom's Taxonomy Classifier</h1>
+            <p>🎯 Advanced AI-powered cognitive level analysis for educational excellence</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="single">Single Question</button>
+                <button class="tab-btn" data-tab="file">Question Paper Analysis</button>
+            </div>
+
+            <!-- Single Question Tab -->
+            <div id="single-tab" class="tab-content active">
+                <div class="input-section">
+                    <div class="input-container">
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="✨ Enter your question here... (e.g., 'What is photosynthesis?', 'How would you evaluate this argument?', 'Design a solution for...')"
+                            rows="4"
+                        ></textarea>
+                        <button id="classifyBtn" class="classify-btn">
+                            <i class="fas fa-magic"></i> Analyze Question
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultSection" class="result-section hidden">
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h2 id="resultLevel">Level</h2>
+                        </div>
+                        <p id="resultDescription" class="result-description">Description</p>
+                        <div class="question-display">
+                            <strong>Question:</strong> <span id="displayQuestion"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload Tab -->
+            <div id="file-tab" class="tab-content">
+                <!-- Spreadsheet Upload Section -->
+                <div class="file-upload-section active">
+                    <div class="upload-container">
+                        <div class="upload-area" id="reportUploadArea">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h3>📊 Upload Questions File</h3>
+                                <p>Drop your Excel or CSV file here for instant Bloom's taxonomy analysis</p>
+                                <p class="file-types">✅ Supported: XLSX, XLS, CSV • Max: 16MB</p>
+                                <input type="file" id="reportFileInput" accept=".xlsx,.xls,.csv" hidden>
+                                <button class="browse-btn">📁 Choose File</button>
+                            </div>
+                        </div>
+                        <div class="upload-info">
+                            <p><i class="fas fa-info-circle"></i> 💡 Pro tip: Use "Question" as your first column header</p>
+                            <p><i class="fas fa-rocket"></i> Get instant AI analysis with detailed classification</p>
+                            <p><i class="fas fa-file-pdf"></i> Download beautiful PDF reports for sharing</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="fileResultSection" class="file-result-section hidden">
+                    <div class="file-result-card">
+                        <div class="file-result-header">
+                            <h2><i class="fas fa-chart-line"></i> 📈 Analysis Results</h2>
+                            <span id="fileName" class="filename"></span>
+                        </div>
+                        
+                        <div class="analysis-summary">
+                            <div class="summary-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="totalQuestions">0</span>
+                                    <span class="stat-label">Total Questions</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="highestLevel">-</span>
+                                    <span class="stat-label">Most Common Level</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-distribution">
+                            <h3>Level Distribution</h3>
+                            <div class="distribution-chart" id="distributionChart">
+                                <!-- Chart will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="questions-list">
+                            <h3>Question Analysis</h3>
+                            <div class="questions-container" id="questionsContainer">
+                                <!-- Questions will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Download Actions -->
+                        <div class="download-actions" id="downloadActions" style="display: none;">
+                            <h3>🎉 Your Report is Ready!</h3>
+                            <div class="download-buttons">
+                                <button id="downloadPdfBtn" class="download-btn pdf">
+                                    <i class="fas fa-download"></i> 📄 Download Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="taxonomy-overview">
+                <h3><i class="fas fa-graduation-cap"></i> 🎓 Bloom's Taxonomy Reference Guide</h3>
+                <p class="guide-intro">Understanding cognitive complexity levels for effective educational assessment</p>
+                
+                <div class="levels-grid">
+                    <div class="level-card" data-level="Remember">
+                        <div class="level-header" style="background-color: #FF6B6B;">
+                            <h4>1. Remember</h4>
+                            <span class="level-icon">🧠</span>
+                        </div>
+                        <div class="level-content">
+                            <p class="level-description">Recall facts and basic concepts from memory</p>
+                            <div class="level-details">
+                                <div class="level-keywords">
+                                    <strong>Key Verbs:</strong> define, list, identify, recall, state, name, describe, tell
+                                </div>
+                                <div class="level-examples">
+                                    <strong>Example Questions:</strong>
+                                    <ul>
+                                        <li>"What is photosynthesis?"</li>
+                                        <li>"List the planets in our solar system"</li>
+                                        <li>"Define democracy"</li>
+                                    </ul>
+                                </div>
+                                <div class="level-purpose">
+                                    <strong>Purpose:</strong> Building foundational knowledge base
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Understand">
+                        <div class="level-header" style="background-color: #4ECDC4;">
+                            <h4>2. Understand</h4>
+                            <span class="level-icon">💡</span>
+                        </div>
+                        <div class="level-content">
+                            <p class="level-description">Explain ideas and concepts in your own words</p>
+                            <div class="level-details">
+                                <div class="level-keywords">
+                                    <strong>Key Verbs:</strong> explain, describe, interpret, summarize, paraphrase, discuss
+                                </div>
+                                <div class="level-examples">
+                                    <strong>Example Questions:</strong>
+                                    <ul>
+                                        <li>"Explain how photosynthesis works"</li>
+                                        <li>"Summarize the main causes of World War II"</li>
+                                        <li>"What does this poem mean?"</li>
+                                    </ul>
+                                </div>
+                                <div class="level-purpose">
+                                    <strong>Purpose:</strong> Demonstrating comprehension and meaning-making
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Apply">
+                        <div class="level-header" style="background-color: #45B7D1;">
+                            <h4>3. Apply</h4>
+                            <span class="level-icon">⚡</span>
+                        </div>
+                        <div class="level-content">
+                            <p class="level-description">Use information in new situations and contexts</p>
+                            <div class="level-details">
+                                <div class="level-keywords">
+                                    <strong>Key Verbs:</strong> apply, use, solve, demonstrate, calculate, implement, execute
+                                </div>
+                                <div class="level-examples">
+                                    <strong>Example Questions:</strong>
+                                    <ul>
+                                        <li>"Calculate the area of this triangle"</li>
+                                        <li>"Apply Newton's laws to solve this problem"</li>
+                                        <li>"Use this formula to find the solution"</li>
+                                    </ul>
+                                </div>
+                                <div class="level-purpose">
+                                    <strong>Purpose:</strong> Transferring knowledge to practical situations
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Analyze">
+                        <div class="level-header" style="background-color: #96CEB4;">
+                            <h4>4. Analyze</h4>
+                            <span class="level-icon">🔍</span>
+                        </div>
+                        <div class="level-content">
+                            <p class="level-description">Break down information and examine relationships</p>
+                            <div class="level-details">
+                                <div class="level-keywords">
+                                    <strong>Key Verbs:</strong> analyze, compare, contrast, examine, investigate, categorize
+                                </div>
+                                <div class="level-examples">
+                                    <strong>Example Questions:</strong>
+                                    <ul>
+                                        <li>"Compare and contrast democracy vs. autocracy"</li>
+                                        <li>"Analyze the causes of climate change"</li>
+                                        <li>"What are the key differences between these theories?"</li>
+                                    </ul>
+                                </div>
+                                <div class="level-purpose">
+                                    <strong>Purpose:</strong> Developing critical thinking and pattern recognition
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Evaluate">
+                        <div class="level-header" style="background-color: #FFEAA7;">
+                            <h4>5. Evaluate</h4>
+                            <span class="level-icon">⚖️</span>
+                        </div>
+                        <div class="level-content">
+                            <p class="level-description">Make judgments and justify decisions with evidence</p>
+                            <div class="level-details">
+                                <div class="level-keywords">
+                                    <strong>Key Verbs:</strong> evaluate, assess, judge, critique, justify, argue, defend
+                                </div>
+                                <div class="level-examples">
+                                    <strong>Example Questions:</strong>
+                                    <ul>
+                                        <li>"Evaluate the effectiveness of this policy"</li>
+                                        <li>"Which solution is better and why?"</li>
+                                        <li>"Critique this research methodology"</li>
+                                    </ul>
+                                </div>
+                                <div class="level-purpose">
+                                    <strong>Purpose:</strong> Building judgment skills and evidence-based reasoning
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Create">
+                        <div class="level-header" style="background-color: #DDA0DD;">
+                            <h4>6. Create</h4>
+                            <span class="level-icon">🎨</span>
+                        </div>
+                        <div class="level-content">
+                            <p class="level-description">Produce new or original work by combining elements</p>
+                            <div class="level-details">
+                                <div class="level-keywords">
+                                    <strong>Key Verbs:</strong> create, design, develop, build, compose, generate, invent
+                                </div>
+                                <div class="level-examples">
+                                    <strong>Example Questions:</strong>
+                                    <ul>
+                                        <li>"Design a solution for reducing plastic waste"</li>
+                                        <li>"Create a business plan for a startup"</li>
+                                        <li>"Develop a new theory to explain this phenomenon"</li>
+                                    </ul>
+                                </div>
+                                <div class="level-purpose">
+                                    <strong>Purpose:</strong> Fostering innovation and original thinking
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="taxonomy-tips">
+                    <h4>💡 Pro Tips for Educators</h4>
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h5>🎯 Balanced Assessment</h5>
+                            <p>Aim for a mix of cognitive levels in your assessments. A good distribution might be 20% Remember, 30% Understand, 25% Apply, 15% Analyze, 7% Evaluate, and 3% Create.</p>
+                        </div>
+                        <div class="tip-card">
+                            <h5>📈 Progressive Complexity</h5>
+                            <p>Start with lower-order thinking skills and gradually build up to higher-order skills. Each level builds upon the previous ones.</p>
+                        </div>
+                        <div class="tip-card">
+                            <h5>🔄 Multi-Level Questions</h5>
+                            <p>Some questions may span multiple cognitive levels. Our AI classifier can detect these complex questions and provide detailed analysis.</p>
+                        </div>
+                        <div class="tip-card">
+                            <h5>📊 Use Data Insights</h5>
+                            <p>Regularly analyze your question distribution to ensure you're challenging students at appropriate cognitive levels for your learning objectives.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>🌟Build By Varun</p>
+        </footer>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay hidden" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-cog fa-spin"></i>
+            <p id="loadingText">Analyzing your question...</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

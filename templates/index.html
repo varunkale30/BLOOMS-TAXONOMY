@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom's Taxonomy Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-brain"></i> Bloom's Taxonomy Classifier</h1>
+            <p>Enter any question or upload a question paper to analyze Bloom's Taxonomy levels</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="single">Single Question</button>
+                <button class="tab-btn" data-tab="file">Question Paper Analysis</button>
+                <button class="tab-btn" data-tab="report">Download Report</button>
+            </div>
+
+            <!-- Single Question Tab -->
+            <div id="single-tab" class="tab-content active">
+                <div class="input-section">
+                    <div class="input-container">
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="Enter your question here... (e.g., 'What is photosynthesis?', 'How would you evaluate this argument?', 'Design a solution for...')"
+                            rows="4"
+                        ></textarea>
+                        <button id="classifyBtn" class="classify-btn">
+                            <i class="fas fa-search"></i> Classify Question
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultSection" class="result-section hidden">
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h2 id="resultLevel">Level</h2>
+                            <span id="confidenceScore" class="confidence">Confidence: 0%</span>
+                        </div>
+                        <p id="resultDescription" class="result-description">Description</p>
+                        <div class="question-display">
+                            <strong>Question:</strong> <span id="displayQuestion"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload Tab -->
+            <div id="file-tab" class="tab-content">
+                <div class="file-upload-section">
+                    <div class="upload-container">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h3>Upload Question Paper</h3>
+                                <p>Drag and drop your file here, or click to browse</p>
+                                <p class="file-types">Supported formats: PDF, DOCX, DOC, TXT</p>
+                                <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" hidden>
+                                <button class="browse-btn">Choose File</button>
+                            </div>
+                        </div>
+                        <div class="upload-info">
+                            <p><i class="fas fa-info-circle"></i> Maximum file size: 16MB</p>
+                            <p><i class="fas fa-lightbulb"></i> The system will automatically extract and analyze all questions from your document</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="fileResultSection" class="file-result-section hidden">
+                    <div class="file-result-card">
+                        <div class="file-result-header">
+                            <h2><i class="fas fa-file-alt"></i> Question Paper Analysis</h2>
+                            <span id="fileName" class="filename"></span>
+                        </div>
+                        
+                        <div class="analysis-summary">
+                            <div class="summary-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="totalQuestions">0</span>
+                                    <span class="stat-label">Total Questions</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="highestLevel">-</span>
+                                    <span class="stat-label">Most Common Level</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="avgConfidence">0%</span>
+                                    <span class="stat-label">Avg Confidence</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-distribution">
+                            <h3>Level Distribution</h3>
+                            <div class="distribution-chart" id="distributionChart">
+                                <!-- Chart will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="questions-list">
+                            <h3>Question Analysis</h3>
+                            <div class="questions-container" id="questionsContainer">
+                                <!-- Questions will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Report Tab -->
+            <div id="report-tab" class="tab-content">
+                <div class="report-upload-section">
+                    <div class="upload-container">
+                        <div class="upload-area" id="reportUploadArea">
+                            <div class="upload-content">
+                                <i class="fas fa-file-excel"></i>
+                                <h3>Upload Questions File</h3>
+                                <p>Upload an Excel or CSV file containing questions to generate a Bloom's taxonomy report</p>
+                                <p class="file-types">Supported formats: XLSX, XLS, CSV</p>
+                                <input type="file" id="reportFileInput" accept=".xlsx,.xls,.csv" hidden>
+                                <button class="browse-btn">Choose File</button>
+                            </div>
+                        </div>
+                        <div class="upload-info">
+                            <p><i class="fas fa-info-circle"></i> Maximum file size: 16MB</p>
+                            <p><i class="fas fa-lightbulb"></i> File should contain questions in the first column with header "Question"</p>
+                            <p><i class="fas fa-download"></i> After processing, you can download a report with Bloom's levels</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportResultSection" class="report-result-section hidden">
+                    <div class="report-result-card">
+                        <div class="report-result-header">
+                            <h2><i class="fas fa-chart-bar"></i> Report Generation Complete</h2>
+                            <span id="reportFileName" class="filename"></span>
+                        </div>
+                        
+                        <div class="report-summary">
+                            <div class="summary-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="reportTotalQuestions">0</span>
+                                    <span class="stat-label">Questions Processed</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="reportHighestLevel">-</span>
+                                    <span class="stat-label">Most Common Level</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="reportAvgConfidence">0%</span>
+                                    <span class="stat-label">Avg Confidence</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <button id="downloadReportBtn" class="download-btn">
+                                <i class="fas fa-download"></i> Download Report (Excel)
+                            </button>
+                            <button id="downloadCsvBtn" class="download-btn secondary">
+                                <i class="fas fa-file-csv"></i> Download Report (CSV)
+                            </button>
+                        </div>
+
+                        <div class="report-preview">
+                            <h3>Report Preview</h3>
+                            <div class="preview-table-container">
+                                <table id="reportPreviewTable" class="preview-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Question</th>
+                                            <th>Bloom's Level</th>
+                                            <th>Description</th>
+                                            <th>Confidence</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportPreviewBody">
+                                        <!-- Preview rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="taxonomy-overview">
+                <h3><i class="fas fa-layer-group"></i> Bloom's Taxonomy Levels</h3>
+                <div class="levels-grid">
+                    <div class="level-card" data-level="Remember">
+                        <div class="level-header" style="background-color: #FF6B6B;">
+                            <h4>1. Remember</h4>
+                        </div>
+                        <p>Recall facts and basic concepts</p>
+                        <div class="level-keywords">
+                            <small>Keywords: define, list, identify, recall</small>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Understand">
+                        <div class="level-header" style="background-color: #4ECDC4;">
+                            <h4>2. Understand</h4>
+                        </div>
+                        <p>Explain ideas and concepts</p>
+                        <div class="level-keywords">
+                            <small>Keywords: explain, describe, interpret, summarize</small>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Apply">
+                        <div class="level-header" style="background-color: #45B7D1;">
+                            <h4>3. Apply</h4>
+                        </div>
+                        <p>Use information in new situations</p>
+                        <div class="level-keywords">
+                            <small>Keywords: apply, use, solve, demonstrate</small>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Analyze">
+                        <div class="level-header" style="background-color: #96CEB4;">
+                            <h4>4. Analyze</h4>
+                        </div>
+                        <p>Draw connections among ideas</p>
+                        <div class="level-keywords">
+                            <small>Keywords: analyze, compare, contrast, examine</small>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Evaluate">
+                        <div class="level-header" style="background-color: #FFEAA7;">
+                            <h4>5. Evaluate</h4>
+                        </div>
+                        <p>Justify a stand or decision</p>
+                        <div class="level-keywords">
+                            <small>Keywords: evaluate, assess, judge, critique</small>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card" data-level="Create">
+                        <div class="level-header" style="background-color: #DDA0DD;">
+                            <h4>6. Create</h4>
+                        </div>
+                        <p>Produce new or original work</p>
+                        <div class="level-keywords">
+                            <small>Keywords: create, design, develop, build</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Bloom's Taxonomy Classifier. Educational tool for understanding cognitive learning levels.</p>
+        </footer>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-cog fa-spin"></i>
+            <p id="loadingText">Analyzing your question...</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
