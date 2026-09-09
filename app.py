@@ -13,6 +13,7 @@ import io
 import re
 import json
 import pandas as pd
+import uuid
 from flask import send_file
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
@@ -31,17 +32,61 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
 # MongoDB configuration
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/blooms_taxonomy')
+class InMemoryInsertResult:
+    def __init__(self, inserted_id):
+        self.inserted_id = inserted_id
+
+
+class InMemoryCollection:
+    def __init__(self):
+        self.documents = []
+
+    def find_one(self, query):
+        return next(
+            (document for document in self.documents
+             if all(document.get(key) == value for key, value in query.items())),
+            None
+        )
+
+    def insert_one(self, document):
+        document = dict(document)
+        document.setdefault('_id', str(uuid.uuid4()))
+        self.documents.append(document)
+        return InMemoryInsertResult(document['_id'])
+
+    def find(self, query=None):
+        query = query or {}
+        matches = [
+            document for document in self.documents
+            if all(document.get(key) == value for key, value in query.items())
+        ]
+        return InMemoryCursor(matches)
+
+
+class InMemoryCursor:
+    def __init__(self, documents):
+        self.documents = documents
+
+    def sort(self, key, direction):
+        self.documents.sort(key=lambda document: document.get(key, datetime.min), reverse=direction < 0)
+        return self
+
+    def limit(self, count):
+        return self.documents[:count]
+
+
 try:
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
     db = client.get_database()
+    client.admin.command('ping')
     users_collection = db.users
     analyses_collection = db.analyses
     print("MongoDB connected successfully")
 except Exception as e:
     print(f"MongoDB connection error: {e}")
-    # Create in-memory collections for testing
-    users_collection = []
-    analyses_collection = []
+    print("Using temporary in-memory storage; configure MONGO_URI for persistent accounts.")
+    users_collection = InMemoryCollection()
+    analyses_collection = InMemoryCollection()
 
 # JWT configuration
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-jwt-secret-key-here')
@@ -110,9 +155,11 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    from bson import ObjectId
     try:
-        user_data = users_collection.find_one({'_id': ObjectId(user_id)})
+        user_data = users_collection.find_one({'_id': user_id})
+        if not user_data:
+            from bson import ObjectId
+            user_data = users_collection.find_one({'_id': ObjectId(user_id)})
         if user_data:
             return User(user_data)
     except:
